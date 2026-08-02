@@ -1,0 +1,140 @@
+export const featuredHotels = [
+  {
+    id: 'h1',
+    name: 'The Oberoi Grand Palace',
+    city: 'Udaipur, India',
+    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200&auto=format&fit=crop',
+    price: 289,
+    originalPrice: 349,
+    rating: 4.9,
+    reviews: 1284,
+    amenities: ['wifi', 'pool', 'spa', 'breakfast'],
+    tag: 'Luxury',
+  },
+  {
+    id: 'h2',
+    name: 'Azure Beach Resort & Villas',
+    city: 'Goa, India',
+    image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=1200&auto=format&fit=crop',
+    price: 199,
+    originalPrice: 240,
+    rating: 4.7,
+    reviews: 956,
+    amenities: ['wifi', 'pool', 'bar', 'beach'],
+    tag: "Editor's Pick",
+  },
+  {
+    id: 'h3',
+    name: 'The Metropolitan Skyline',
+    city: 'Mumbai, India',
+    image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=1200&auto=format&fit=crop',
+    price: 145,
+    originalPrice: 175,
+    rating: 4.6,
+    reviews: 2103,
+    amenities: ['wifi', 'gym', 'breakfast', 'parking'],
+    tag: 'Business',
+  },
+  {
+    id: 'h4',
+    name: 'Himalayan Mist Retreat',
+    city: 'Manali, India',
+    image: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=1200&auto=format&fit=crop',
+    price: 129,
+    originalPrice: 160,
+    rating: 4.8,
+    reviews: 674,
+    amenities: ['wifi', 'breakfast', 'fireplace', 'mountain-view'],
+    tag: 'Trending',
+  },
+  {
+    id: 'h5',
+    name: 'Lakeview Serenity Suites',
+    city: 'Nainital, India',
+    image: 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?q=80&w=1200&auto=format&fit=crop',
+    price: 109,
+    originalPrice: 139,
+    rating: 4.5,
+    reviews: 512,
+    amenities: ['wifi', 'lake-view', 'breakfast'],
+    tag: 'Best Value',
+  },
+  {
+    id: 'h6',
+    name: 'The Royal Rajwada Heritage',
+    city: 'Jaipur, India',
+    image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=1200&auto=format&fit=crop',
+    price: 179,
+    originalPrice: 220,
+    rating: 4.9,
+    reviews: 1489,
+    amenities: ['wifi', 'pool', 'spa', 'heritage'],
+    tag: 'Heritage',
+  },
+];
+
+export const popularCities = [
+  { id: 'c1', name: 'Goa', hotels: 342, image: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=80&w=800&auto=format&fit=crop' },
+  { id: 'c2', name: 'Jaipur', hotels: 218, image: 'https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=800&auto=format&fit=crop' },
+  { id: 'c3', name: 'Mumbai', hotels: 456, image: 'https://images.unsplash.com/photo-1529253355930-ddbe423a2ac7?q=80&w=800&auto=format&fit=crop' },
+  { id: 'c4', name: 'Udaipur', hotels: 156, image: 'https://images.unsplash.com/photo-1524230507669-5ff97982bb5e?q=80&w=800&auto=format&fit=crop' },
+  { id: 'c5', name: 'Manali', hotels: 189, image: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=800&auto=format&fit=crop' },
+  { id: 'c6', name: 'Kerala', hotels: 267, image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=800&auto=format&fit=crop' },
+];
+
+export const testimonials = [
+  {
+    id: 't1',
+    name: 'Ananya Sharma',
+    role: 'Frequent Traveler',
+    avatar: 'https://i.pravatar.cc/150?img=32',
+    quote:
+      'Booking through StayEase felt effortless from start to finish. The interface is gorgeous and the hotel exactly matched what was shown.',
+    rating: 5,
+  },
+  {
+    id: 't2',
+    name: 'Rohan Mehta',
+    role: 'Business Traveler',
+    avatar: 'https://i.pravatar.cc/150?img=12',
+    quote:
+      'I manage a dozen work trips a year and this is by far the smoothest booking experience I have used — fast search, clear pricing.',
+    rating: 5,
+  },
+  {
+    id: 't3',
+    name: 'Priya Nair',
+    role: 'Family Vacationer',
+    avatar: 'https://i.pravatar.cc/150?img=45',
+    quote:
+      'The photos and amenities list were spot on. Customer support helped us modify a booking within minutes. Highly recommend.',
+    rating: 4,
+  },
+];
+
+export const whyChooseUs = [
+  {
+    id: 'w1',
+    title: 'Best Price Guarantee',
+    description: 'Find a lower price elsewhere? We match it, no questions asked.',
+    icon: 'badge-percent',
+  },
+  {
+    id: 'w2',
+    title: '24/7 Concierge Support',
+    description: 'Real humans, real help — day or night, wherever you are.',
+    icon: 'headset',
+  },
+  {
+    id: 'w3',
+    title: 'Verified Reviews Only',
+    description: 'Every review comes from a guest who actually stayed.',
+    icon: 'shield-check',
+  },
+  {
+    id: 'w4',
+    title: 'Free Cancellation',
+    description: 'Plans change. Cancel most bookings free up to 24 hours before.',
+    icon: 'calendar-check',
+  },
+];
