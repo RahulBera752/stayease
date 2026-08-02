@@ -33,16 +33,16 @@ import OwnerEditHotelPage from "./pages/owner/OwnerEditHotelPage.jsx";
 import OwnerBookingsPage from "./pages/owner/OwnerBookingsPage.jsx";
 
 // Admin Pages
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage.jsx";
-import HotelsPage from "./pages/admin/HotelsPage.jsx";
-import AddHotelPage from "./pages/admin/AddHotelPage.jsx";
-import EditHotelPage from "./pages/admin/EditHotelPage.jsx";
-import BookingsPage from "./pages/admin/BookingsPage.jsx";
-import UsersPage from "./pages/admin/UsersPage.jsx";
-import ReviewsPage from "./pages/admin/ReviewsPage.jsx";
-import CouponsPage from "./pages/admin/CouponsPage.jsx";
-import AdminReportsPage from "./pages/admin/AdminReportsPage.jsx";
-import AdminSettingsPage from "./pages/admin/AdminSettingsPage.jsx";
+import AdminDashboardPage from "./pages/Admin/AdminDashboardPage.jsx";
+import HotelsPage from "./pages/Admin/HotelsPage.jsx";
+import AddHotelPage from "./pages/Admin/AddHotelPage.jsx";
+import EditHotelPage from "./pages/Admin/EditHotelPage.jsx";
+import BookingsPage from "./pages/Admin/BookingsPage.jsx";
+import UsersPage from "./pages/Admin/UsersPage.jsx";
+import ReviewsPage from "./pages/Admin/ReviewsPage.jsx";
+import CouponsPage from "./pages/Admin/CouponsPage.jsx";
+import AdminReportsPage from "./pages/Admin/AdminReportsPage.jsx";
+import AdminSettingsPage from "./pages/Admin/AdminSettingsPage.jsx";
 
 function App() {
   return (
