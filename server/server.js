@@ -21,7 +21,7 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
-import paymentRoutes from "./routes/paymentRoutes.js"; // 👈 1. Import payment routes
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 // DNS & ENV Configurations
 dns.setDefaultResultOrder("ipv4first");
@@ -42,9 +42,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Updated CORS configuration
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://stayease-umber.vercel.app",
+      process.env.CLIENT_URL,
+    ].filter(Boolean),
     credentials: true,
   })
 );
@@ -76,7 +81,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/payments", paymentRoutes); // 👈 2. Mount payment routes
+app.use("/api/payments", paymentRoutes);
 
 // Error Handling Middleware
 app.use(notFound);
