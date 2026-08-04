@@ -7,7 +7,7 @@ const StatCard = ({
   icon: Icon,
   color = "text-white",
   bg = "bg-indigo-600",
-  change,
+  change, 
   changeType = "up",
 }) => {
   return (

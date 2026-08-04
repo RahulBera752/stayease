@@ -9,7 +9,6 @@ import {
   Phone,
   Mail,
   MapPin,
-  CreditCard,
   TicketPercent,
   BadgeCheck,
   Users,
@@ -18,6 +17,8 @@ import {
   CheckCircle2,
   Copy,
   ExternalLink,
+  Wallet,
+  Globe,
 } from "lucide-react";
 
 // Verhoeff Algorithm for 12-digit Identity Validation
@@ -46,7 +47,7 @@ const p = [
 ];
 
 const validateIdentityChecksum = (numStr) => {
-  if (!/^\d{12}$/.test(numStr)) return false;
+  if (!numStr || !/^\d{12}$/.test(numStr)) return false;
   let c = 0;
   const invertedArray = numStr.split("").reverse().map(Number);
   for (let i = 0; i < invertedArray.length; i++) {
@@ -55,7 +56,7 @@ const validateIdentityChecksum = (numStr) => {
   return c === 0;
 };
 
-// Improved script loader preventing duplicate injections
+// Script loader preventing duplicate injections
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
     if (window.Razorpay) {
@@ -80,10 +81,21 @@ const BookingPage = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
 
-  if (!state) {
+  // Retrieve booking data with localStorage fallback
+  const bookingData = useMemo(() => {
+    if (state && state.hotel) {
+      localStorage.setItem("stayEaseBooking", JSON.stringify(state));
+      return state;
+    }
+    const saved = localStorage.getItem("stayEaseBooking");
+    return saved ? JSON.parse(saved) : null;
+  }, [state]);
+
+  if (!bookingData || !bookingData.hotel) {
     return (
-      <div className="max-w-6xl mx-auto py-20 text-center text-white">
+      <div className="min-h-screen bg-[#030712] flex flex-col items-center justify-center px-4 text-white text-center">
         <h1 className="text-4xl font-bold">Booking information not found</h1>
+        <p className="text-slate-400 mt-2">Please select a hotel from the home page to proceed with booking.</p>
         <button
           onClick={() => navigate("/")}
           className="mt-6 px-6 py-3 rounded-xl bg-cyan-500 font-semibold hover:bg-cyan-600 transition"
@@ -94,7 +106,17 @@ const BookingPage = () => {
     );
   }
 
-  const { hotel, checkIn, checkOut, guests } = state;
+  const { hotel, checkIn = "", checkOut = "", guests = 1 } = bookingData;
+
+  // Safe location helper
+  const getHotelLocation = () => {
+    if (!hotel) return "";
+    if (typeof hotel.location === "string") return hotel.location;
+    if (hotel.location && typeof hotel.location === "object") {
+      return hotel.city || hotel.address || "";
+    }
+    return hotel.city || hotel.address || "";
+  };
 
   const [fullName, setFullName] = useState("");
   const [mobile, setMobile] = useState("");
@@ -107,18 +129,19 @@ const BookingPage = () => {
   const [appliedCouponCode, setAppliedCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [paymentMethod, setPaymentMethod] = useState("Cash"); // "Cash" or "Online"
 
   const [bookingSuccessData, setBookingSuccessData] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // DST-safe night calculation
   const nights = useMemo(() => {
+    if (!checkIn || !checkOut) return 1;
     const start = new Date(checkIn);
     const end = new Date(checkOut);
     const diffTime = Math.abs(end - start);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(1, diffDays);
+    return isNaN(diffDays) ? 1 : Math.max(1, diffDays);
   }, [checkIn, checkOut]);
 
   const subtotal = (hotel?.pricePerNight || hotel?.price || 0) * nights * rooms;
@@ -136,8 +159,8 @@ const BookingPage = () => {
       setIsApplyingCoupon(true);
       const { data } = await api.post("/coupons/validate", { code: coupon.trim() });
       
-      const discountPercentage = data.data.discountPercentage;
-      const validCode = data.data.code;
+      const discountPercentage = data?.data?.discountPercentage || 0;
+      const validCode = data?.data?.code || coupon;
 
       setDiscount(discountPercentage);
       setAppliedCouponCode(validCode);
@@ -183,7 +206,7 @@ const BookingPage = () => {
     setIsSubmitting(true);
 
     try {
-      if (paymentMethod === "Razorpay") {
+      if (paymentMethod === "Online") {
         const scriptLoaded = await loadRazorpayScript();
         if (!scriptLoaded) {
           toast.error("Razorpay SDK failed to load. Check your internet connection.");
@@ -191,34 +214,35 @@ const BookingPage = () => {
           return;
         }
 
-        let orderData;
-        try {
-          const response = await api.post("/payments/create-order", {
-            amount: finalPrice,
-            bookingId: bookingId,
-          });
-          orderData = response.data;
-        } catch (error) {
-          console.warn("Backend order creation unavailable, using client fallback:", error);
-          orderData = {
-            orderId: `order_${Math.random().toString(36).substring(2, 12)}`,
-            amount: finalPrice * 100,
-            currency: "INR",
-          };
+        // 1. Create Order on Backend
+        const { data } = await api.post("/payments/create-order", {
+          amount: finalPrice,
+          bookingId: bookingId,
+        });
+
+        if (!data || !data.order || !data.order.id) {
+          toast.error("Failed to create Razorpay order from server.");
+          setIsSubmitting(false);
+          return;
         }
 
+        const razorpayKey =
+          import.meta.env.VITE_RAZORPAY_KEY_ID ||
+          import.meta.env.VITE_RAZORPAY_KEY ||
+          "rzp_test_TLkVUaNPhDqIaY";
+
         const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY || "rzp_test_placeholder",
-          amount: orderData.amount || finalPrice * 100,
-          currency: orderData.currency || "INR",
+          key: razorpayKey,
+          amount: data.order.amount,
+          currency: data.order.currency,
           name: "StayEase Hotels",
-          description: `Booking for ${hotel.name}`,
-          order_id: orderData.orderId,
+          description: `Booking for ${hotel?.name || "Hotel"}`,
+          order_id: data.order.id,
           handler: async function (response) {
             try {
-              const { data } = await api.post("/bookings", {
+              const bookingRes = await api.post("/bookings", {
                 bookingId,
-                hotelId: hotel._id,
+                hotelId: hotel?._id,
                 fullName,
                 mobile,
                 email,
@@ -233,7 +257,7 @@ const BookingPage = () => {
                 discount,
                 subtotal,
                 totalPrice: finalPrice,
-                paymentMethod: "Razorpay",
+                paymentMethod: "Online",
                 paymentDetails: {
                   razorpayPaymentId: response.razorpay_payment_id,
                   razorpayOrderId: response.razorpay_order_id,
@@ -242,21 +266,15 @@ const BookingPage = () => {
               });
 
               setBookingSuccessData({
-                bookingId: data?.bookingId || bookingId,
+                bookingId: bookingRes.data?.bookingId || bookingId,
                 totalPrice: finalPrice,
-                paymentMethod: "Razorpay",
+                paymentMethod: "Online (Razorpay)",
                 paymentId: response.razorpay_payment_id,
               });
               toast.success("Payment & Booking Successful!");
             } catch (err) {
-              console.error(err);
-              setBookingSuccessData({
-                bookingId,
-                totalPrice: finalPrice,
-                paymentMethod: "Razorpay",
-                paymentId: response.razorpay_payment_id,
-              });
-              toast.success("Payment Received & Booking Confirmed!");
+              console.error("Booking save failed:", err.response?.data || err.message);
+              toast.error(err.response?.data?.message || "Payment received, but failed to save booking to database.");
             } finally {
               setIsSubmitting(false);
             }
@@ -282,37 +300,31 @@ const BookingPage = () => {
         return;
       }
 
-      // Direct Booking (Cash, UPI, Card)
-      let responseData;
-      try {
-        const { data } = await api.post("/bookings", {
-          bookingId,
-          hotelId: hotel._id,
-          fullName,
-          mobile,
-          email,
-          address,
-          aadhar,
-          checkIn,
-          checkOut,
-          guests,
-          rooms,
-          nights,
-          couponCode: appliedCouponCode,
-          discount,
-          subtotal,
-          totalPrice: finalPrice,
-          paymentMethod,
-        });
-        responseData = data;
-      } catch (e) {
-        console.warn("Backend request fallback trigger:", e);
-      }
+      // Direct Booking (Cash)
+      const { data } = await api.post("/bookings", {
+        bookingId,
+        hotelId: hotel?._id,
+        fullName,
+        mobile,
+        email,
+        address,
+        aadhar,
+        checkIn,
+        checkOut,
+        guests,
+        rooms,
+        nights,
+        couponCode: appliedCouponCode,
+        discount,
+        subtotal,
+        totalPrice: finalPrice,
+        paymentMethod: "Cash",
+      });
 
       setBookingSuccessData({
-        bookingId: responseData?.bookingId || bookingId,
+        bookingId: data?.bookingId || bookingId,
         totalPrice: finalPrice,
-        paymentMethod,
+        paymentMethod: "Cash",
       });
 
       toast.success("Booking Successful!");
@@ -567,24 +579,25 @@ const BookingPage = () => {
             >
               <img
                 src={
-                  hotel.images?.[0]?.url ||
-                  hotel.images?.[0] ||
-                  hotel.thumbnail?.url ||
-                  hotel.thumbnail
+                  hotel?.images?.[0]?.url ||
+                  hotel?.images?.[0] ||
+                  hotel?.thumbnail?.url ||
+                  hotel?.thumbnail ||
+                  "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80"
                 }
-                alt={hotel.name}
+                alt={hotel?.name || "Hotel"}
                 className="h-64 w-full object-cover"
               />
 
               <div className="p-7">
                 <h2 className="text-3xl font-bold">Booking Summary</h2>
-                <h3 className="mt-4 text-xl font-semibold">{hotel.name}</h3>
-                <p className="text-slate-400">{hotel.location}</p>
+                <h3 className="mt-4 text-xl font-semibold">{hotel?.name || "Luxury Hotel"}</h3>
+                <p className="text-slate-400">{getHotelLocation()}</p>
 
                 <div className="mt-8 space-y-5">
                   <div className="flex justify-between">
                     <span className="text-slate-400">Price / Night</span>
-                    <span>₹{hotel.pricePerNight || hotel.price || 0}</span>
+                    <span>₹{hotel?.pricePerNight || hotel?.price || 0}</span>
                   </div>
 
                   <div className="flex justify-between">
@@ -631,29 +644,36 @@ const BookingPage = () => {
                   Payment Method
                 </h3>
 
+                {/* Cash & Online Payment Options */}
                 <div className="grid gap-3">
-                  {["Cash", "UPI", "Card", "Razorpay"].map((item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => setPaymentMethod(item)}
-                      className={`rounded-2xl border p-4 text-left transition ${
-                        paymentMethod === item
-                          ? "border-cyan-400 bg-cyan-500/20"
-                          : "border-white/10 bg-white/5 hover:bg-white/10"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <CreditCard />
-                          <span>{item}</span>
+                  {[
+                    { id: "Cash", label: "Cash", icon: Wallet },
+                    { id: "Online", label: "Online (Razorpay)", icon: Globe },
+                  ].map((item) => {
+                    const IconComponent = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(item.id)}
+                        className={`rounded-2xl border p-4 text-left transition ${
+                          paymentMethod === item.id
+                            ? "border-cyan-400 bg-cyan-500/20"
+                            : "border-white/10 bg-white/5 hover:bg-white/10"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <IconComponent className="text-cyan-400" />
+                            <span>{item.label}</span>
+                          </div>
+                          {paymentMethod === item.id && (
+                            <div className="h-3 w-3 rounded-full bg-cyan-400" />
+                          )}
                         </div>
-                        {paymentMethod === item && (
-                          <div className="h-3 w-3 rounded-full bg-cyan-400" />
-                        )}
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <button
@@ -699,7 +719,7 @@ const BookingPage = () => {
                   Booking Confirmed!
                 </h2>
                 <p className="text-slate-400 text-sm">
-                  We look forward to welcoming you to {hotel.name}
+                  We look forward to welcoming you to {hotel?.name || "our hotel"}
                 </p>
               </div>
 
@@ -730,7 +750,7 @@ const BookingPage = () => {
                 </div>
                 <div className="flex justify-between py-1 border-b border-white/10">
                   <span className="text-slate-400">Hotel</span>
-                  <span className="font-medium text-white">{hotel.name}</span>
+                  <span className="font-medium text-white">{hotel?.name || "Hotel"}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-white/10">
                   <span className="text-slate-400">Dates</span>
@@ -746,7 +766,7 @@ const BookingPage = () => {
                 </div>
                 {bookingSuccessData.paymentId && (
                   <div className="flex justify-between py-1 border-b border-white/10">
-                    <span className="text-slate-400">Razorpay Payment ID</span>
+                    <span className="text-slate-400">Razorpay Key / Payment ID</span>
                     <span className="font-mono text-xs text-slate-300">
                       {bookingSuccessData.paymentId}
                     </span>

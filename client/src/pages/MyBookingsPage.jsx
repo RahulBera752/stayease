@@ -58,6 +58,17 @@ const MyBookingsPage = () => {
     fetchMyBookings();
   }, []);
 
+  // Safe location helper to prevent rendering objects as React children
+  const getHotelLocation = (booking) => {
+    const loc = booking.hotel?.location || booking.location;
+    if (!loc) return "Location unavailable";
+    if (typeof loc === "string") return loc;
+    if (typeof loc === "object") {
+      return booking.hotel?.city || booking.city || booking.hotel?.address || "Location available";
+    }
+    return "Location unavailable";
+  };
+
   // Handle Review Submission
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -184,10 +195,7 @@ const MyBookingsPage = () => {
             {bookings.map((booking) => {
               const hotelName =
                 booking.hotel?.name || booking.hotelName || "Hotel Stay";
-              const hotelLocation =
-                booking.hotel?.location ||
-                booking.location ||
-                "Location unavailable";
+              const hotelLocation = getHotelLocation(booking);
               const image =
                 booking.hotel?.images?.[0]?.url ||
                 booking.hotel?.images?.[0] ||
@@ -214,7 +222,6 @@ const MyBookingsPage = () => {
                     <div>
                       <div className="flex justify-between items-start gap-4 mb-2">
                         <h2 className="text-2xl font-bold">{hotelName}</h2>
-                        {/* Dynamic Status Display */}
                         {renderStatusBadge(booking.status || booking.bookingStatus)}
                       </div>
 
@@ -237,7 +244,7 @@ const MyBookingsPage = () => {
                             Check In
                           </span>
                           <span className="font-medium text-slate-200">
-                            {booking.checkIn || "N/A"}
+                            {booking.checkIn ? booking.checkIn.split("T")[0] : "N/A"}
                           </span>
                         </div>
                         <div>
@@ -245,7 +252,7 @@ const MyBookingsPage = () => {
                             Check Out
                           </span>
                           <span className="font-medium text-slate-200">
-                            {booking.checkOut || "N/A"}
+                            {booking.checkOut ? booking.checkOut.split("T")[0] : "N/A"}
                           </span>
                         </div>
                       </div>
@@ -260,7 +267,6 @@ const MyBookingsPage = () => {
                           </span>
                         </span>
 
-                        {/* Leave Review Button */}
                         {completed && (
                           booking.isReviewed ? (
                             <span className="text-xs font-semibold px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full flex items-center gap-1">
@@ -276,7 +282,6 @@ const MyBookingsPage = () => {
                           )
                         )}
 
-                        {/* Report Issue Button */}
                         {completed && (
                           <button
                             onClick={() => handleOpenReport(booking)}
@@ -323,7 +328,6 @@ const MyBookingsPage = () => {
               </p>
 
               <form onSubmit={handleReviewSubmit} className="space-y-4">
-                {/* Rating Stars */}
                 <div>
                   <label className="text-xs font-medium text-slate-300 block mb-2">
                     Rating
@@ -350,7 +354,6 @@ const MyBookingsPage = () => {
                   </div>
                 </div>
 
-                {/* Review Text Area */}
                 <div>
                   <label className="text-xs font-medium text-slate-300 block mb-2">
                     Your Feedback
@@ -365,7 +368,6 @@ const MyBookingsPage = () => {
                   />
                 </div>
 
-                {/* Actions */}
                 <div className="flex gap-3 pt-2">
                   <button
                     type="button"

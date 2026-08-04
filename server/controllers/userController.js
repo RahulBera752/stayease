@@ -1,5 +1,8 @@
 import asyncHandler from "express-async-handler";
-import User from "../models/User.js"; // Ensure capitalized "User.js" matches your model filename
+import crypto from "crypto";
+import bcrypt from "bcryptjs";
+import User from "../models/User.js";
+import sendEmail from "../utils/sendEmail.js"; // 👈 Import your Nodemailer utility
 
 // @desc    Get all users
 // @route   GET /api/users or /api/admin/users
@@ -69,7 +72,7 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
     user.password = req.body.password;
   }
 
-  // 🚨 FIX: Handle role update when passed in body
+  // Handle role update when passed in body
   if (req.body.role) {
     user.role = req.body.role;
     user.isAdmin = req.body.role === "admin";
@@ -122,5 +125,120 @@ export const updateUserRole = asyncHandler(async (req, res) => {
       role: updatedUser.role,
       isAdmin: updatedUser.isAdmin,
     },
+  });
+});
+
+// @desc    Forgot Password - Generate reset token & Send Email
+// @route   POST /api/users/forgot-password
+// @access  Public
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    res.status(400);
+    throw new Error("Please provide an email address");
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found with this email");
+  }
+
+  // Generate random reset token
+  const resetToken = crypto.randomBytes(20).toString("hex");
+
+  // Hash token and set expiration to 10 minutes (matches resetPasswordExpires in User model)
+  user.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
+
+  await user.save();
+
+  // Create reset link URL
+  const resetUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/reset-password/${resetToken}`;
+
+  // Styled email HTML template matching your dark-mode UI
+  const html = `
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #030712; color: #ffffff; padding: 40px 20px;">
+      <div style="max-width: 500px; margin: 0 auto; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 40px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);">
+        <h2 style="color: #38bdf8; font-size: 24px; font-weight: 800; margin-top: 0; margin-bottom: 16px;">
+          StayEase Security
+        </h2>
+        <p style="color: #94a3b8; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+          You have requested to reset your password. Click the secure button below to proceed. This link will expire in 10 minutes.
+        </p>
+        <div style="text-align: center; margin-bottom: 32px;">
+          <a href="${resetUrl}" target="_blank" style="display: inline-block; background: linear-gradient(to right, #06b6d4, #2563eb); color: #ffffff; padding: 14px 32px; border-radius: 16px; font-weight: bold; text-decoration: none; font-size: 14px; box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.3);">
+            Reset Password
+          </a>
+        </div>
+        <p style="color: #64748b; font-size: 12px; line-height: 1.5; margin-bottom: 0;">
+          If you did not request this password reset, please ignore this email or contact support if you have concerns.
+        </p>
+      </div>
+    </div>
+  `;
+
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: "Password Reset Instructions - StayEase",
+      html,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Password reset instructions sent to ${user.email}`,
+    });
+  } catch (error) {
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(500);
+    throw new Error("Email could not be sent. Please try again later.");
+  }
+});
+
+// @desc    Reset Password
+// @route   PUT /api/users/reset-password/:token
+// @access  Public
+export const resetPassword = asyncHandler(async (req, res) => {
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    res.status(400);
+    throw new Error("Invalid or expired reset token");
+  }
+
+  const { password } = req.body;
+
+  if (!password || password.length < 6) {
+    res.status(400);
+    throw new Error("Password must be at least 6 characters long");
+  }
+
+  // Assign plain password; your User model pre-save hook will handle hashing
+  user.password = password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Password updated successfully. You can now log in.",
   });
 });

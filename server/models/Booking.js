@@ -12,7 +12,6 @@ const bookingSchema = new mongoose.Schema(
       ref: "Hotel",
       required: true,
     },
-    // Missing guest fields
     fullName: { type: String, required: true },
     mobile: { type: String, required: true },
     email: { type: String },
@@ -35,7 +34,7 @@ const bookingSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ["Cash", "Card", "UPI", "Razorpay", "Stripe"],
+      enum: ["Cash", "Card", "UPI", "Razorpay", "Stripe", "Online", "Online (Razorpay)"],
       default: "Cash",
     },
     paymentStatus: {

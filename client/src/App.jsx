@@ -14,6 +14,8 @@ import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import SignupPage from "./pages/SignupPage.jsx";
 import VerifyOtpPage from "./pages/VerifyOtpPage.jsx";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 import SearchPage from "./pages/SearchPage.jsx";
 import HotelDetailsPage from "./pages/HotelDetailsPage.jsx";
 import AboutPage from "./pages/AboutPage.jsx";
@@ -54,6 +56,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/verify-otp" element={<VerifyOtpPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/hotels/:slug" element={<HotelDetailsPage />} />
         <Route path="/about" element={<AboutPage />} />

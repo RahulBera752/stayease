@@ -12,6 +12,9 @@ import { toast } from "react-hot-toast";
 const BookingCard = ({ hotel }) => {
   const navigate = useNavigate();
 
+  // Format today's date as YYYY-MM-DD to restrict past dates
+  const todayStr = new Date().toISOString().split("T")[0];
+
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState(2);
@@ -38,6 +41,16 @@ const BookingCard = ({ hotel }) => {
   const handleBooking = () => {
     if (!checkIn || !checkOut) {
       toast.error("Please select check-in and check-out dates.");
+      return;
+    }
+
+    if (checkIn < todayStr) {
+      toast.error("Check-in date cannot be in the past.");
+      return;
+    }
+
+    if (checkOut <= checkIn) {
+      toast.error("Check-out date must be after check-in date.");
       return;
     }
 
@@ -71,9 +84,7 @@ const BookingCard = ({ hotel }) => {
       </h2>
 
       <div className="mt-6">
-
         <div className="flex items-end gap-2">
-
           <span className="text-4xl font-bold text-primary">
             ₹{hotel.pricePerNight}
           </span>
@@ -81,7 +92,6 @@ const BookingCard = ({ hotel }) => {
           <span className="text-muted-foreground mb-1">
             / night
           </span>
-
         </div>
 
         {hotel.discount > 0 && (
@@ -89,11 +99,9 @@ const BookingCard = ({ hotel }) => {
             {hotel.discount}% OFF Available
           </div>
         )}
-
       </div>
 
       <div className="space-y-5 mt-8">
-
         <div>
           <label className="text-sm font-medium flex items-center gap-2 mb-2">
             <Calendar size={18} />
@@ -102,9 +110,18 @@ const BookingCard = ({ hotel }) => {
 
           <input
             type="date"
+            min={todayStr}
             value={checkIn}
-            onChange={(e) => setCheckIn(e.target.value)}
-            className="w-full rounded-xl border px-4 py-3 bg-background"
+            onChange={(e) => {
+              const newCheckIn = e.target.value;
+              setCheckIn(newCheckIn);
+              if (checkOut && checkOut <= newCheckIn) {
+                const nextDay = new Date(newCheckIn);
+                nextDay.setDate(nextDay.getDate() + 1);
+                setCheckOut(nextDay.toISOString().split("T")[0]);
+              }
+            }}
+            className="w-full rounded-xl border px-4 py-3 bg-background cursor-pointer"
           />
         </div>
 
@@ -116,9 +133,10 @@ const BookingCard = ({ hotel }) => {
 
           <input
             type="date"
+            min={checkIn || todayStr}
             value={checkOut}
             onChange={(e) => setCheckOut(e.target.value)}
-            className="w-full rounded-xl border px-4 py-3 bg-background"
+            className="w-full rounded-xl border px-4 py-3 bg-background cursor-pointer"
           />
         </div>
 
@@ -139,11 +157,9 @@ const BookingCard = ({ hotel }) => {
             className="w-full rounded-xl border px-4 py-3 bg-background"
           />
         </div>
-
       </div>
 
       <div className="border-t mt-8 pt-6 space-y-3">
-
         <div className="flex justify-between">
           <span>Nights</span>
           <span>{totalNights || 1}</span>
@@ -168,7 +184,6 @@ const BookingCard = ({ hotel }) => {
             ₹{totalPrice}
           </span>
         </div>
-
       </div>
 
       <button
@@ -179,13 +194,11 @@ const BookingCard = ({ hotel }) => {
       </button>
 
       <div className="mt-8 space-y-4">
-
         <div className="flex items-center gap-3 text-sm">
           <ShieldCheck
             className="text-green-500"
             size={20}
           />
-
           <span>Free cancellation within 24 hours</span>
         </div>
 
@@ -194,12 +207,9 @@ const BookingCard = ({ hotel }) => {
             className="text-primary"
             size={20}
           />
-
           <span>Secure payment gateway</span>
         </div>
-
       </div>
-
     </motion.aside>
   );
 };

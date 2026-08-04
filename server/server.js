@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
-import path from "path"; // 👈 1. Added path import
+import path from "path";
 
 import connectDB from "./config/db.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
@@ -21,6 +21,7 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js"; // 👈 1. Import payment routes
 
 // DNS & ENV Configurations
 dns.setDefaultResultOrder("ipv4first");
@@ -52,7 +53,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-// 👈 2. CRITICAL FIX: Make the /uploads folder static & publicly accessible
+// Make the /uploads folder static & publicly accessible
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
 // Health Check
@@ -75,6 +76,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/payments", paymentRoutes); // 👈 2. Mount payment routes
 
 // Error Handling Middleware
 app.use(notFound);

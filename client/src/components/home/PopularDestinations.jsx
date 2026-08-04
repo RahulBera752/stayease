@@ -1,36 +1,39 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { popularCities } from '../../data/mockData.js';
-import api from '../../services/api.js'; // Adjust path if needed
+import api from '../../services/api.js';
 
-const PopularDestinations = ({ hotels: initialHotels = [] }) => {
-  const [hotels, setHotels] = useState(initialHotels);
+const PopularDestinations = ({ hotels: propHotels }) => {
+  const [hotels, setHotels] = useState(propHotels || []);
+  const isFetchingRef = useRef(false);
 
-  // If initialHotels prop updates from parent, sync it
   useEffect(() => {
-    if (initialHotels && initialHotels.length > 0) {
-      setHotels(initialHotels);
+    // If hotels were passed as props, use them
+    if (propHotels && propHotels.length > 0) {
+      setHotels(propHotels);
+      return;
     }
-  }, [initialHotels]);
 
-  // Fetch hotels directly if no hotels were passed as props
-  useEffect(() => {
-    if (initialHotels && initialHotels.length > 0) return;
-
+    // Otherwise, fetch exactly ONCE on mount
     const fetchHotels = async () => {
+      if (isFetchingRef.current) return;
+      isFetchingRef.current = true;
+
       try {
         const { data } = await api.get('/hotels');
         const fetchedList = data.hotels || data || [];
         setHotels(fetchedList);
       } catch (err) {
         console.error('Failed to fetch hotels for destinations:', err);
+      } finally {
+        isFetchingRef.current = false;
       }
     };
 
     fetchHotels();
-  }, [initialHotels]);
+  }, []); // 👈 Empty dependency array prevents re-triggering on parent re-renders!
 
   // Helper function to count actual hotels matching each city
   const getCityHotelCount = (cityName) => {
@@ -45,7 +48,6 @@ const PopularDestinations = ({ hotels: initialHotels = [] }) => {
       const country = (hotel.country || '').toLowerCase();
       const address = (hotel.address || '').toLowerCase();
 
-      // SAFE CHECK: Check typeof hotel.location to avoid .toLowerCase() crash on objects
       const locationStr =
         typeof hotel.location === 'string'
           ? hotel.location.toLowerCase()

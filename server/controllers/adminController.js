@@ -165,5 +165,5 @@ export const getAdminDashboard = asyncHandler(async (req, res) => {
   });
 });
 
-// 👈 ALIAS EXPORT: Prevents Nodemon crashes if adminRoutes.js uses getDashboardStats
+
 export const getDashboardStats = getAdminDashboard;

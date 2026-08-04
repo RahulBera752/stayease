@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['user', 'admin'],
+      enum: ['user', 'hotelOwner', 'admin'],
       default: 'user',
     },
     avatar: {
@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema(
     otp: { type: String, select: false },
     otpExpires: { type: Date, select: false },
     resetPasswordToken: { type: String, select: false },
-    resetPasswordExpires: { type: Date, select: false },
+    resetPasswordExpires: { type: Date, select: false }, // Matches controller check
   },
   { timestamps: true }
 );

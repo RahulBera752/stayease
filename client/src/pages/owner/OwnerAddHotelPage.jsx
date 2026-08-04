@@ -131,6 +131,18 @@ export function OwnerAddHotelPage() {
   };
 
   //-----------------------------------------
+  // Room Types Toggle
+  //-----------------------------------------
+  const handleRoomType = (roomType) => {
+    setHotel((prev) => ({
+      ...prev,
+      roomTypes: prev.roomTypes.includes(roomType)
+        ? prev.roomTypes.filter((item) => item !== roomType)
+        : [...prev.roomTypes, roomType],
+    }));
+  };
+
+  //-----------------------------------------
   // Images Handler
   //-----------------------------------------
   const setImages = (value) => {
@@ -291,7 +303,7 @@ export function OwnerAddHotelPage() {
     try {
       setLoading(true);
 
-      // 🛡️ Safely parse coordinates or default to 0 to prevent [NaN, NaN]
+      // Safe coordinate conversions (GeoJSON expects [longitude, latitude])
       const lat = parseFloat(hotel.latitude) || 0;
       const lng = parseFloat(hotel.longitude) || 0;
 

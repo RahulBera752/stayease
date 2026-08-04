@@ -24,6 +24,7 @@ export const createBooking = asyncHandler(async (req, res) => {
     discount,
     paymentMethod,
     specialRequest,
+    paymentDetails,
   } = req.body;
 
   if (!hotelId || !checkIn || !checkOut || !fullName || !mobile || !address || !aadhar) {
@@ -79,6 +80,13 @@ export const createBooking = asyncHandler(async (req, res) => {
   const tax = Math.round(subtotal * 0.18);
   const totalPrice = subtotal - discountAmount + tax;
 
+  // Check if payment is online/prepaid
+  const isOnlinePayment =
+    paymentMethod === "Razorpay" ||
+    paymentMethod === "Online" ||
+    paymentMethod === "Online (Razorpay)" ||
+    paymentMethod === "Card";
+
   const booking = await Booking.create({
     user: req.user._id,
     hotel: hotel._id,
@@ -103,10 +111,11 @@ export const createBooking = asyncHandler(async (req, res) => {
     totalPrice,
 
     paymentMethod: paymentMethod || "Cash",
+    paymentDetails: paymentDetails || {},
     specialRequest: specialRequest || "",
 
     bookingStatus: "pending",
-    paymentStatus: paymentMethod === "Razorpay" ? "paid" : "pending",
+    paymentStatus: isOnlinePayment ? "paid" : "pending",
   });
 
   const populatedBooking = await Booking.findById(booking._id)
@@ -149,7 +158,6 @@ export const getAllBookings = asyncHandler(async (req, res) => {
   let filter = {};
   const userRole = req.user?.role?.toLowerCase();
 
-  // Handle hotel owner filtering (case-insensitive & alias-friendly)
   if (userRole === "hotelowner" || userRole === "owner") {
     const ownerHotels = await Hotel.find({ owner: req.user._id }).select("_id");
     const hotelIds = ownerHotels.map((h) => h._id);
@@ -176,7 +184,6 @@ export const getAllBookings = asyncHandler(async (req, res) => {
 export const getBookingById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  // Validate ObjectId before querying MongoDB
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({
       success: false,
@@ -242,7 +249,6 @@ export const updateBookingStatus = asyncHandler(async (req, res) => {
 
   const userRole = req.user?.role?.toLowerCase();
 
-  // Authorization check for Hotel Owner
   if (userRole === "hotelowner" || userRole === "owner") {
     const hotelOwnerId = booking.hotel?.owner?.toString();
     if (hotelOwnerId !== req.user._id.toString()) {
@@ -253,7 +259,6 @@ export const updateBookingStatus = asyncHandler(async (req, res) => {
     }
   }
 
-  // Handle status update
   const targetStatus = (bookingStatus || status)?.toLowerCase();
 
   if (targetStatus) {
@@ -366,7 +371,6 @@ export const deleteBooking = asyncHandler(async (req, res) => {
 
   const userRole = req.user?.role?.toLowerCase();
 
-  // Authorization Check
   if (
     userRole !== "admin" &&
     ((userRole !== "hotelowner" && userRole !== "owner") ||
