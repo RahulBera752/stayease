@@ -44,7 +44,6 @@ const HotelCard = ({ hotel, index = 0 }) => {
   const getImage = () => {
     let rawPath = "";
 
-    // 1. Extract raw image string/object from all possible properties
     if (typeof hotel?.thumbnail === "string" && hotel.thumbnail.trim()) {
       rawPath = hotel.thumbnail;
     } else if (hotel?.thumbnail?.url) {
@@ -69,7 +68,6 @@ const HotelCard = ({ hotel, index = 0 }) => {
       return "https://placehold.co/600x400?text=Hotel";
     }
 
-    // 2. Format local server uploads path (e.g., uploads\image.png -> http://localhost:5000/uploads/image.png)
     const normalizedPath = rawPath.replace(/\\/g, "/");
 
     if (
@@ -168,7 +166,7 @@ const HotelCard = ({ hotel, index = 0 }) => {
     >
       <Link
         to={`/hotels/${hotel.slug}`}
-        className="card-premium group block h-full"
+        className="card-premium group block h-full bg-[#151b2b] border border-gray-800 rounded-2xl overflow-hidden shadow-xl"
       >
         <div className="relative h-56 overflow-hidden">
           <img
@@ -211,12 +209,11 @@ const HotelCard = ({ hotel, index = 0 }) => {
             </span>
           )}
 
-          <div className="absolute bottom-3 right-3 bg-white rounded-lg px-2 py-1 flex items-center gap-1 shadow">
+          <div className="absolute bottom-3 right-3 bg-white text-gray-900 rounded-lg px-2 py-1 flex items-center gap-1 shadow">
             <Star
               size={13}
               className="fill-yellow-400 text-yellow-400"
             />
-
             <span className="text-xs font-semibold">
               {typeof rating === "number" ? rating.toFixed(1) : rating}
             </span>
@@ -224,12 +221,14 @@ const HotelCard = ({ hotel, index = 0 }) => {
         </div>
 
         <div className="p-5">
-          <h3 className="text-xl font-bold text-gray-900">
+          {/* ✅ Fixed text color to white for dark theme visibility */}
+          <h3 className="text-xl font-bold text-white truncate">
             {hotel.name}
           </h3>
 
-          <p className="text-gray-500 mt-1">
-            {hotel.city}, {hotel.country}
+          {/* ✅ Fixed subtitle color to light gray */}
+          <p className="text-gray-400 text-sm mt-1">
+            {hotel.city}, {hotel.country || "India"}
           </p>
 
           <div className="flex gap-3 mt-4">
@@ -242,37 +241,37 @@ const HotelCard = ({ hotel, index = 0 }) => {
                 return (
                   <div
                     key={item}
-                    className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center"
+                    className="w-8 h-8 rounded-full bg-indigo-950/60 border border-indigo-800/50 flex items-center justify-center"
                   >
                     <Icon
                       size={15}
-                      className="text-indigo-600"
+                      className="text-indigo-400"
                     />
                   </div>
                 );
               })}
           </div>
 
-          <div className="flex justify-between items-end mt-5">
+          <div className="flex justify-between items-end mt-5 pt-4 border-t border-gray-800/60">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-indigo-600">
+                <span className="text-2xl font-bold text-indigo-400">
                   ₹{price}
                 </span>
 
                 {originalPrice > price && (
-                  <span className="line-through text-gray-400">
+                  <span className="line-through text-gray-500 text-sm">
                     ₹{originalPrice}
                   </span>
                 )}
               </div>
 
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-400">
                 per night • {reviews} reviews
               </p>
             </div>
 
-            <span className="px-5 py-3 rounded-xl bg-indigo-600 text-white font-semibold">
+            <span className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors">
               Book Now
             </span>
           </div>
