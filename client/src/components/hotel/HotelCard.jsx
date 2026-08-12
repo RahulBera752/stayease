@@ -32,7 +32,7 @@ const amenityIconMap = {
 };
 
 const BACKEND_BASE_URL =
-  import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") || "http://localhost:5000";
+  import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") || "https://stayease-9gsn.onrender.com";
 
 const HotelCard = ({ hotel, index = 0 }) => {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -221,12 +221,10 @@ const HotelCard = ({ hotel, index = 0 }) => {
         </div>
 
         <div className="p-5">
-          {/* ✅ Fixed text color to white for dark theme visibility */}
           <h3 className="text-xl font-bold text-white truncate">
             {hotel.name}
           </h3>
 
-          {/* ✅ Fixed subtitle color to light gray */}
           <p className="text-gray-400 text-sm mt-1">
             {hotel.city}, {hotel.country || "India"}
           </p>

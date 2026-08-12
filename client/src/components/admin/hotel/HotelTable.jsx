@@ -65,7 +65,7 @@ const HotelTable = ({
 
               const imageStr = typeof rawProp === "string" ? rawProp.trim() : "";
 
-              const BACKEND_URL = "http://localhost:5000";
+              const BACKEND_URL = "https://stayease-9gsn.onrender.com";
               let imageUrl = "";
               if (imageStr) {
                 imageUrl = imageStr.startsWith("http")
