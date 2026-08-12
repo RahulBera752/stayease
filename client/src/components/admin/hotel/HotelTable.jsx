@@ -65,7 +65,10 @@ const HotelTable = ({
 
               const imageStr = typeof rawProp === "string" ? rawProp.trim() : "";
 
-              const BACKEND_URL = "https://stayease-9gsn.onrender.com";
+              // ✅ Dynamic backend URL fallback to Render
+              const BACKEND_URL =
+                import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") || "https://stayease-9gsn.onrender.com";
+              
               let imageUrl = "";
               if (imageStr) {
                 imageUrl = imageStr.startsWith("http")
@@ -146,7 +149,6 @@ const HotelTable = ({
 
                   <td>
                     <div className="flex justify-center gap-2">
-                      {/* Fixed Eye Button Link */}
                       <Link
                         to={`/hotels/${publicIdentifier}`}
                         target="_blank"
