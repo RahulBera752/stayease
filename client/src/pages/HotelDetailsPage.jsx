@@ -3,22 +3,15 @@ import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
-import axios from "axios";
+
+// ✅ Import the centralized api service correctly
+import api from "../services/api";
 
 import Hotelery from "../components/hotel/HotelGallery";
 import HotelInfo from "../components/hotel/HotelInfo";
 import BookingCard from "../components/hotel/BookingCard";
 import HotelAmenities from "../components/hotel/HotelAmenities";
 import SimilarHotels from "../components/hotel/SimilarHotels";
-
-// Direct API instance to avoid any env variable loading issues on port 5173
-const api = axios.create({
-  baseURL: "http://localhost:5000/api",
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
 
 const HotelDetailsPage = () => {
   const { slug } = useParams();
