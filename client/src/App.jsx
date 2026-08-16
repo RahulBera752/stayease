@@ -20,6 +20,8 @@ import SearchPage from "./pages/SearchPage.jsx";
 import HotelDetailsPage from "./pages/HotelDetailsPage.jsx";
 import AboutPage from "./pages/AboutPage.jsx";
 import ContactPage from "./pages/ContactPage.jsx";
+import PrivacyPage from "./pages/PrivacyPage.jsx";
+import CookiePage from "./pages/CookiePage.jsx";
 import NotFoundPage from "./pages/NotFoundPage.jsx";
 
 // Protected User Pages
@@ -62,6 +64,8 @@ function App() {
         <Route path="/hotels/:slug" element={<HotelDetailsPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/cookies" element={<CookiePage />} />
 
         {/* Protected Customer/User Routes */}
         <Route element={<ProtectedRoute />}>
